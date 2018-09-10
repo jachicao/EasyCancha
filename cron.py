@@ -1,6 +1,6 @@
 from crontab import CronTab
 
-cron = CronTab()
+cron = CronTab(tabfile='/etc/crontab')
 job = cron.new(command='python main.py')
 
 job.hour.every(1)
