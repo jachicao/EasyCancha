@@ -210,6 +210,8 @@ def reserve_date(driver, sport_type, datetime, duration):
     # login
     driver.get(URL_LOGIN)
 
+    print(driver.page_source)
+
     while has_element_by_xpath(driver, LOGIN_USERNAME_XPATH):
         login(driver, EASYCANCHA_USERNAME, EASYCANCHA_PASSWORD)
 
@@ -240,6 +242,7 @@ def reserve_date(driver, sport_type, datetime, duration):
 
     # reserve new
     driver.get(URL_CLUB)
+
     sport_xpath = SPORT_TYPE_XPATH.format(type=sport_type)
     wait_element_displayed_by_xpath(driver, sport_xpath)
     click_element_by_xpath(driver, sport_xpath)
