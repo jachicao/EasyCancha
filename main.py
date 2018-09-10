@@ -7,6 +7,7 @@ from selenium.webdriver import Chrome
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 from xvfbwrapper import Xvfb
 load_dotenv()
 
@@ -293,12 +294,17 @@ for obj in RESERVATIONS:
     next_datetime = datetime_datetime(
         next_date.year, next_date.month, next_date.day,
         int(hour), int(minute), 0, 0, chile_timezone)
-    display = Xvfb(width=800, height=800, colordepth=16)
-    display.start()
-    driver = Chrome()
+    # display = Xvfb(width=800, height=800, colordepth=16)
+    # display.start()
+    chrome_options = ChromeOptions()
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--disable-gpu')
+    driver = Chrome(chrome_options=chrome_options)
     try:
         reserve_date(driver, 'Tenis', next_datetime, int(obj['duration']))
     except Exception:
         pass
     driver.quit()
-    display.stop()
+    # display.stop()
