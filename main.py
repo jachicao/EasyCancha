@@ -1,21 +1,57 @@
 from os import environ
+from sys import argv
 from time import sleep
 from pytz import timezone
 from dotenv import load_dotenv
-from datetime import datetime as datetime_datetime, timedelta
+from datetime import datetime as datetime_datetime, timedelta, \
+    date as datetime_date
 from selenium.webdriver import Chrome
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 load_dotenv()
 
+RESERVATIONS = [
+    {
+        'weekday': 'Miércoles',
+        'hour': '12:00',
+        'duration': '60',
+    },
+    {
+        'weekday': 'Jueves',
+        'hour': '12:00',
+        'duration': '60',
+    },
+    {
+        'weekday': 'Viernes',
+        'hour': '17:00',
+        'duration': '60',
+    },
+    {
+        'weekday': 'Sábado',
+        'hour': '11:00',
+        'duration': '60',
+    },
+]
+
+URL_LOGIN = 'https://www.easycancha.com/login'
+URL_RESERVATIONS = 'https://www.easycancha.com/bookings'
+URL_CLUB = 'https://www.easycancha.com/book/clubs/59/sports'
+
 LOGIN_USERNAME_XPATH = '//input[@type="email"]'
 LOGIN_PASSWORD_XPATH = '//input[@type="password"]'
 LOGIN_BUTTON_XPATH = '//button[text()="Ingresar"]'
 
+RESERVATIONS_XPATH = '//div[contains(text(), "Mis reservas")]'
+HAS_RESERVATION_XPATH = '//span[contains(text(), "reserva activa")]'
+SHOW_MORE_RESERVATIONS = '//button[contains(text(), "Cargar más reservas")]'
+RESERVATION_CARDS_XPATH = '//div[@class="bookingContainer"]'
+RESERVATION_RELATIVE_DATE_XPATH = './div[3]/div[1]'
+RESERVATION_RELATIVE_HOUR_XPATH = './div[3]/div[2]'
+
 LOADING_XPATH = '//div[@class="loading"]'
 
-SPORT_TYPE_XPATH = '//div[contains(text(), "{type}}")]/../../..'
+SPORT_TYPE_XPATH = '//div[contains(text(), "{type}")]/../../..'
 
 MODAL_XPATH = '//div[@class="modal-dialog modal-md"]'
 MONTH_YEAR_XPATH = '//th[@colspan="5"]'
@@ -31,8 +67,10 @@ NOT_FOUND_XPATH = '//div[contains(text(), "No se encontraron resultados '\
     'en el horario que buscas, pero te sugerimos alguno de'\
     ' los siguientes horarios:")]'
 
-TENIS_COURT_XPATH = '//strong[text()="RESERVAR"]/..'
+COURT_OPTIONS_XPATH = '//strong[text()="RESERVAR"]/..'
 RESERVE_XPATH = '//button[text()="Reservar"]'
+
+RESERVE_DONE_XPATH = '//*[contains(text(), "¡ Tu reserva ya está lista !")]'
 
 WAIT_TIME = 60
 
@@ -53,6 +91,31 @@ MONTH_TRANSFORMATION = {
     12: 'diciembre'
 }
 
+MONTH_NAME_TO_NUMBER = {
+    'enero': 1,
+    'febrero': 2,
+    'marzo': 3,
+    'abril': 4,
+    'mayo': 5,
+    'junio': 6,
+    'julio': 7,
+    'agosto': 8,
+    'septiembre': 9,
+    'octubre': 10,
+    'noviembre': 11,
+    'diciembre': 12,
+}
+
+WEEKDAY_TRANSFORMATION = {
+    'Lunes': 0,
+    'Martes': 1,
+    'Miércoles': 2,
+    'Jueves': 3,
+    'Viernes': 4,
+    'Sábado': 5,
+    'Domingo': 6
+}
+
 
 def has_element_by_xpath(driver, xpath):
     try:
@@ -68,6 +131,14 @@ def is_displayed(element):
     try:
         attribute = element.get_attribute('style')
         return 'display: block' in attribute
+    except Exception as e:
+        return False
+
+
+def has_element_displayed_by_xpath(driver, xpath):
+    try:
+        element = driver.find_element_by_xpath(xpath)
+        return is_displayed(element)
     except Exception as e:
         return False
 
@@ -111,6 +182,7 @@ def click_element_by_xpath(driver, xpath):
     try:
         element.click()
     except Exception as e:
+        print(e)
         driver.execute_script('arguments[0].click();', element)
 
 
@@ -120,29 +192,58 @@ def select_option_by_xpath(driver, xpath, value):
 
 
 def login(driver, username, password):
-    driver.find_element_by_xpath(LOGIN_USERNAME_XPATH).send_keys(
-        username)
-    driver.find_element_by_xpath(LOGIN_PASSWORD_XPATH).send_keys(
-        password)
+    user_element = driver.find_element_by_xpath(LOGIN_USERNAME_XPATH)
+    user_element.clear()
+    user_element.send_keys(username)
+    password_element = driver.find_element_by_xpath(LOGIN_PASSWORD_XPATH)
+    password_element.clear()
+    password_element.send_keys(password)
     click_element_by_xpath(driver, LOGIN_BUTTON_XPATH)
+    wait_loading_by_xpath(driver, LOADING_XPATH)
 
 
-def reserve_date(sport_type, datetime, duration):
-    if datetime - datetime_datetime.now() > timedelta(weeks=1):
-        raise Exception('Time exceeds a week')
+def reserve_date(driver, sport_type, datetime, duration):
+    if datetime - datetime_datetime.now(chile_timezone) > timedelta(weeks=1):
         return
+
     EASYCANCHA_USERNAME = environ['EASYCANCHA_USERNAME']
     EASYCANCHA_PASSWORD = environ['EASYCANCHA_PASSWORD']
+    # login
+    driver.get(URL_LOGIN)
 
-    driver = Chrome()
-    driver.get('https://www.easycancha.com/login')
+    while has_element_by_xpath(driver, LOGIN_USERNAME_XPATH):
+        login(driver, EASYCANCHA_USERNAME, EASYCANCHA_PASSWORD)
 
-    login(driver, EASYCANCHA_USERNAME, EASYCANCHA_PASSWORD)
+    # check for old reservations
+    driver.get(URL_RESERVATIONS)
+    if has_element_displayed_by_xpath(driver, LOADING_XPATH):
+        wait_loading_by_xpath(driver, LOADING_XPATH)
 
-    driver.get('https://www.easycancha.com/book/clubs/59/sports')
+    sleep(2)
 
-    wait_loading_by_xpath(driver, LOADING_XPATH)
-    click_element_by_xpath(driver, SPORT_TYPE_XPATH.format(type=sport_type))
+    if has_element_by_xpath(driver, SHOW_MORE_RESERVATIONS):
+        click_element_by_xpath(driver, SHOW_MORE_RESERVATIONS)
+
+    for element in driver.find_elements_by_xpath(RESERVATION_CARDS_XPATH):
+        date_text = element.find_element_by_xpath(
+            RESERVATION_RELATIVE_DATE_XPATH).get_attribute('innerText').strip()
+        day_name, day_number, month_name, year_number = date_text.split(' ')
+        month_number = MONTH_NAME_TO_NUMBER.get(month_name)
+        hour_text = element.find_element_by_xpath(
+            RESERVATION_RELATIVE_HOUR_XPATH).get_attribute('innerText').strip()
+        hour, minute = hour_text.split(':')
+        reservation_datetime = datetime_datetime(
+            int(year_number), int(month_number), int(day_number), int(hour),
+            int(minute), 0, 0, chile_timezone)
+        if reservation_datetime - datetime < timedelta(minutes=duration) or \
+                datetime - reservation_datetime < timedelta(minutes=duration):
+            return
+
+    # reserve new
+    driver.get(URL_CLUB)
+    sport_xpath = SPORT_TYPE_XPATH.format(type=sport_type)
+    wait_element_displayed_by_xpath(driver, sport_xpath)
+    click_element_by_xpath(driver, sport_xpath)
     wait_element_displayed_by_xpath(driver, MODAL_XPATH)
     click_element_by_xpath(driver, MONTH_YEAR_XPATH)
     month_xpath = MONTH_XPATH.format(
@@ -168,19 +269,34 @@ def reserve_date(sport_type, datetime, duration):
     wait_loading_by_xpath(driver, LOADING_XPATH)
     if has_element_by_xpath(driver, LOGIN_USERNAME_XPATH):
         login(driver, EASYCANCHA_USERNAME, EASYCANCHA_PASSWORD)
+        wait_loading_by_xpath(driver, LOADING_XPATH)
 
-    wait_loading_by_xpath(driver, LOADING_XPATH)
     if has_element_by_xpath(driver, NOT_FOUND_XPATH):
         driver.quit()
         return
 
-    click_element_by_xpath(driver, TENIS_COURT_XPATH)
+    click_element_by_xpath(driver, COURT_OPTIONS_XPATH)
     wait_element_displayed_by_xpath(driver, RESERVE_XPATH)
     click_element_by_xpath(driver, RESERVE_XPATH)
+    wait_element_displayed_by_xpath(driver, RESERVE_DONE_XPATH)
 
-    sleep(5000)
 
+def get_next_weekday(date, weekday):
+    days_ahead = (weekday - date.weekday()) % 7
+    return date + timedelta(days_ahead)
+
+
+for obj in RESERVATIONS:
+    weekday_number = WEEKDAY_TRANSFORMATION[obj['weekday']]
+    next_date = get_next_weekday(datetime_datetime.now(
+        chile_timezone), weekday_number).date()
+    hour, minute = obj['hour'].split(':')
+    next_datetime = datetime_datetime(
+        next_date.year, next_date.month, next_date.day,
+        int(hour), int(minute), 0, 0, chile_timezone)
+    driver = Chrome()
+    try:
+        reserve_date(driver, 'Tenis', next_datetime, int(obj['duration']))
+    except Exception:
+        pass
     driver.quit()
-
-
-reserve_date('Tenis', datetime_datetime(2018, 9, 16, 8, 0, 0), 90)
