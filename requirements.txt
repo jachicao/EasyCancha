@@ -2,3 +2,4 @@ selenium
 python-dotenv
 pytz
 python-crontab
+xvfbwrapper
