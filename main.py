@@ -304,7 +304,7 @@ for obj in RESERVATIONS:
     driver = Chrome(chrome_options=chrome_options)
     try:
         reserve_date(driver, 'Tenis', next_datetime, int(obj['duration']))
-    except Exception:
-        pass
+    except Exception as e:
+        print(e)
     driver.quit()
     # display.stop()
