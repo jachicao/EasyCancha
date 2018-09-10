@@ -1,10 +1,8 @@
 from os import environ
-from sys import argv
 from time import sleep
 from pytz import timezone
 from dotenv import load_dotenv
-from datetime import datetime as datetime_datetime, timedelta, \
-    date as datetime_date
+from datetime import datetime as datetime_datetime, timedelta
 from selenium.webdriver import Chrome
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.common.by import By
