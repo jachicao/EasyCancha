@@ -1,8 +1,10 @@
 from crontab import CronTab
 
-cron = CronTab(tabfile='/etc/crontab')
-job = cron.new(command='python main.py')
+cron = CronTab(user='root')
+job = cron.new(command='python3 /root/easycancha/main.py')
 
 job.hour.every(1)
+job.every_reboot()
+job.enable()
 
 cron.write()

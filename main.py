@@ -10,6 +10,8 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 load_dotenv()
 
+HEADLESS = True
+
 RESERVATIONS = [
     {
         'weekday': 'Miércoles',
@@ -281,7 +283,10 @@ def reserve_date(driver, sport_type, datetime, duration):
 
 
 def get_next_weekday(date, weekday):
-    days_ahead = (weekday - date.weekday()) % 7
+    difference = weekday - date.weekday()
+    days_ahead = difference % 7
+    if difference == 0:
+        days_ahead = 7
     return date + timedelta(days_ahead)
 
 
@@ -294,10 +299,11 @@ for obj in RESERVATIONS:
         next_date.year, next_date.month, next_date.day,
         int(hour), int(minute), 0, 0, chile_timezone)
     chrome_options = ChromeOptions()
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--disable-gpu')
+    if HEADLESS:
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--disable-gpu')
     driver = Chrome(chrome_options=chrome_options)
     try:
         reserve_date(driver, 'Tenis', next_datetime, int(obj['duration']))
