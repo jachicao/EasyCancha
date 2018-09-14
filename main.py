@@ -276,6 +276,7 @@ def reserve_date(driver, sport_type, datetime, duration):
     if has_element_by_xpath(driver, NOT_FOUND_XPATH):
         return
 
+    wait_element_displayed_by_xpath(driver, COURT_OPTIONS_XPATH)
     click_element_by_xpath(driver, COURT_OPTIONS_XPATH)
     wait_element_displayed_by_xpath(driver, RESERVE_XPATH)
     click_element_by_xpath(driver, RESERVE_XPATH)
