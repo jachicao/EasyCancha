@@ -183,7 +183,6 @@ def click_element_by_xpath(driver, xpath):
     try:
         element.click()
     except Exception as e:
-        print(e)
         driver.execute_script('arguments[0].click();', element)
 
 
