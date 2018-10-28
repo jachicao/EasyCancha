@@ -8,7 +8,7 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 from easycancha.models import RecurrentReservation, OneTimeReservation
 from easycancha.tasks import reserve_date, get_next_weekday
 
-HEADLESS = False
+HEADLESS = True
 
 chile_timezone = timezone('America/Santiago')
 

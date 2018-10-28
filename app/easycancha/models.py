@@ -68,7 +68,7 @@ class RecurrentReservation(models.Model):
     def __str__(self):
         return f'{self.clubsport} - {self.weekday} - ' \
             f'{str(self.hour).zfill(2)}:{str(self.minute).zfill(2)} - '\
-            f'{self.duration}'
+            f'{self.duration} minutes'
 
 
 class OneTimeReservation(models.Model):
@@ -77,4 +77,4 @@ class OneTimeReservation(models.Model):
     duration = models.IntegerField()
 
     def __str__(self):
-        return f'{self.clubsport} - {self.datetime} - {self.duration}'
+        return f'{self.clubsport} - {self.datetime} - {self.duration} minutes'
