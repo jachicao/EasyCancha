@@ -1,3 +1,5 @@
+# coding=utf-8
+
 from os import environ
 from time import sleep
 from pytz import timezone
