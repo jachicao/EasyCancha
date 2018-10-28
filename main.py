@@ -67,9 +67,7 @@ SELECT_DURATION_XPATH = '//*[@id="timespan"]'
 OPTION_DURATION_VALUE_FORMAT = 'number:{duration}'
 SEARCH_XPATH = '//button[text()="Buscar"]'
 
-NOT_FOUND_XPATH = '//div[contains(text(), "No se encontraron resultados '\
-    'en el horario que buscas, pero te sugerimos alguno de'\
-    ' los siguientes horarios:")]'
+NOT_FOUND_XPATH = '//div[contains(text(), "No se encontraron resultados")]'
 
 COURT_OPTIONS_XPATH = '//strong[text()="RESERVAR"]/..'
 RESERVE_XPATH = '//button[text()="Reservar"]'
