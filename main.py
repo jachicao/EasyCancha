@@ -77,7 +77,7 @@ RESERVE_DONE_XPATH = '//*[contains(text(), "¡ Tu reserva ya está lista !")]'
 
 WAIT_TIME = 60
 
-chile_timezone = timezone('Chile/Continental')
+chile_timezone = timezone('America/Santiago')
 
 MONTH_TRANSFORMATION = {
     1: 'enero',
