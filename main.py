@@ -4,6 +4,7 @@ from os import environ
 from time import sleep
 from pytz import timezone
 from dotenv import load_dotenv
+from traceback import print_exc
 from datetime import datetime as datetime_datetime, timedelta
 from selenium.webdriver import Chrome
 from selenium.webdriver.support.ui import Select, WebDriverWait
@@ -311,4 +312,5 @@ for obj in RESERVATIONS:
         reserve_date(driver, 'Tenis', next_datetime, int(obj['duration']))
     except Exception as e:
         print(e)
+        print_exc()
     driver.quit()
