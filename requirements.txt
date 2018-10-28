@@ -1,3 +1,5 @@
 selenium
 python-dotenv
 pytz
+django
+psycopg2

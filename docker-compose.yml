@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:alpine
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    env_file: .env
+  django:
+    build: .
+    command: >
+      /bin/sh -c "
+        until psql -h postgres -U "develop" -c '\q';
+        do
+          sleep 1;
+        done;
+        sleep 10;
+        python manage.py runserver 0.0.0.0:8000;
+      "
+    restart: always
+    links:
+      - postgres
+    depends_on:
+      - postgres
+    ports:
+      - '80:8000'
+    env_file: .env

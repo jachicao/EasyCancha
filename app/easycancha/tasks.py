@@ -1,42 +1,12 @@
 # coding=utf-8
-
-from os import environ
 from time import sleep
 from pytz import timezone
-from dotenv import load_dotenv
-from traceback import print_exc
 from datetime import datetime as datetime_datetime, timedelta
-from selenium.webdriver import Chrome
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.chrome.options import Options as ChromeOptions
-load_dotenv()
 
 HEADLESS = True
-
-RESERVATIONS = [
-    {
-        'weekday': 'Miércoles',
-        'hour': '12:00',
-        'duration': '60',
-    },
-    {
-        'weekday': 'Jueves',
-        'hour': '12:00',
-        'duration': '60',
-    },
-    {
-        'weekday': 'Viernes',
-        'hour': '17:00',
-        'duration': '60',
-    },
-    {
-        'weekday': 'Sábado',
-        'hour': '11:00',
-        'duration': '60',
-    },
-]
 
 URL_LOGIN = 'https://www.easycancha.com/login'
 URL_RESERVATIONS = 'https://www.easycancha.com/bookings'
@@ -203,17 +173,16 @@ def login(driver, username, password):
     wait_loading_by_xpath(driver, LOADING_XPATH)
 
 
-def reserve_date(driver, sport_type, club_id, datetime, duration):
+def reserve_date(
+        driver, username, password, sport_type, club_id, datetime, duration):
     if datetime - datetime_datetime.now(chile_timezone) > timedelta(weeks=1):
         return
 
-    EASYCANCHA_USERNAME = environ['EASYCANCHA_USERNAME']
-    EASYCANCHA_PASSWORD = environ['EASYCANCHA_PASSWORD']
     # login
     driver.get(URL_LOGIN)
 
     while has_element_by_xpath(driver, LOGIN_USERNAME_XPATH):
-        login(driver, EASYCANCHA_USERNAME, EASYCANCHA_PASSWORD)
+        login(driver, username, password)
 
     # check for old reservations
     driver.get(URL_RESERVATIONS)
@@ -270,7 +239,7 @@ def reserve_date(driver, sport_type, club_id, datetime, duration):
     click_element_by_xpath(driver, SEARCH_XPATH)
     wait_loading_by_xpath(driver, LOADING_XPATH)
     if has_element_by_xpath(driver, LOGIN_USERNAME_XPATH):
-        login(driver, EASYCANCHA_USERNAME, EASYCANCHA_PASSWORD)
+        login(driver, username, password)
         wait_loading_by_xpath(driver, LOADING_XPATH)
 
     if has_element_by_xpath(driver, NOT_FOUND_XPATH):
@@ -289,26 +258,3 @@ def get_next_weekday(date, weekday):
     if difference == 0:
         days_ahead = 7
     return date + timedelta(days_ahead)
-
-
-for obj in RESERVATIONS:
-    weekday_number = WEEKDAY_TRANSFORMATION[obj['weekday']]
-    next_date = get_next_weekday(datetime_datetime.now(
-        chile_timezone), weekday_number).date()
-    hour, minute = obj['hour'].split(':')
-    next_datetime = datetime_datetime(
-        next_date.year, next_date.month, next_date.day,
-        int(hour), int(minute), 0, 0, chile_timezone)
-    chrome_options = ChromeOptions()
-    if HEADLESS:
-        chrome_options.add_argument('--no-sandbox')
-        chrome_options.add_argument('--disable-dev-shm-usage')
-        chrome_options.add_argument('--headless')
-        chrome_options.add_argument('--disable-gpu')
-    driver = Chrome(chrome_options=chrome_options)
-    try:
-        reserve_date(driver, 'Tenis', 59, next_datetime, int(obj['duration']))
-    except Exception as e:
-        print(e)
-        print_exc()
-    driver.quit()
