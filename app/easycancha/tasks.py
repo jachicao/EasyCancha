@@ -175,6 +175,8 @@ def login(driver, username, password):
 
 def reserve_date(
         driver, username, password, sport_type, club_id, datetime, duration):
+    if datetime < datetime_datetime.now(chile_timezone):
+        return
     if datetime - datetime_datetime.now(chile_timezone) > timedelta(weeks=1):
         return
 
