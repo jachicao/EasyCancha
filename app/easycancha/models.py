@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.timezone import localtime
 
 LENGTH_16 = 16
 LENGTH_32 = 32
@@ -77,4 +78,5 @@ class OneTimeReservation(models.Model):
     duration = models.IntegerField()
 
     def __str__(self):
-        return f'{self.clubsport} - {self.datetime} - {self.duration} minutes'
+        return f'{self.clubsport} - {localtime(self.datetime)} '\
+            f'- {self.duration} minutes'
