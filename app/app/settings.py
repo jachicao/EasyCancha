@@ -85,10 +85,13 @@ WSGI_APPLICATION = 'app.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
+DATABASE_HOST = os.environ.get('IS_DOCKER') is None \
+    and '127.0.0.1' or os.environ.get('DATABASE_SERVICE_HOST')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'HOST': os.environ.get('DATABASE_SERVICE_HOST'),
+        'HOST': DATABASE_HOST,
         'NAME': os.environ.get('DATABASE_SERVICE_NAME'),
         'USER': os.environ.get('DATABASE_SERVICE_USERNAME'),
         'PASSWORD': os.environ.get('DATABASE_SERVICE_PASSWORD'),
