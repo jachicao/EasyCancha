@@ -178,7 +178,8 @@ def reserve_date(
     print(sport_type, club_id, datetime, duration)
     if datetime < datetime_datetime.now(chile_timezone):
         return
-    if datetime - datetime_datetime.now(chile_timezone) > timedelta(weeks=1):
+    if datetime - datetime_datetime.now(chile_timezone) > timedelta(
+            weeks=1, days=1):
         return
 
     # login
