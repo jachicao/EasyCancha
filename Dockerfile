@@ -7,11 +7,9 @@ RUN apk update && apk upgrade && \
 RUN apk update \
   && apk add --virtual build-deps g++ gcc python3-dev musl-dev git libffi-dev \
   && apk add postgresql-dev postgresql-client libxslt-dev \
-  && pip install pycrypto psycopg2 \
+  && pip install psycopg2 \
   && apk del build-deps \
   && rm -rf /var/cache/apk/*
-
-RUN apk add --no-cache chromium@edge chromium-chromedriver@edge xvfb ttf-freefont
 
 RUN mkdir /code
 WORKDIR /code
