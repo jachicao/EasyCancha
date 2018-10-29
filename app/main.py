@@ -2,6 +2,7 @@ from app import wsgi  # noqa
 from os import environ
 from pytz import timezone
 from traceback import print_exc
+from django.utils.timezone import localtime
 from datetime import datetime as datetime_datetime
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options as ChromeOptions
@@ -60,6 +61,9 @@ for onetimereservation in OneTimeReservation.objects.select_related(
             driver, username, password,
             sport.name, club.easycancha_id,
             onetimereservation.datetime, onetimereservation.duration)
+            localtime(
+                onetimereservation.datetime, chile_timezone),
+            onetimereservation.duration)
     except Exception as e:
         print(e)
         print_exc()
