@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import RecurrentReservation, OneTimeReservation
+from .models import Club, ClubSport, RecurrentReservation, OneTimeReservation
 
 #   admin.site.register(Weekday)
 #   admin.site.register(Sport)
