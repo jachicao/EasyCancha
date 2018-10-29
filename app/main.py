@@ -60,7 +60,6 @@ for onetimereservation in OneTimeReservation.objects.select_related(
         reserve_date(
             driver, username, password,
             sport.name, club.easycancha_id,
-            onetimereservation.datetime, onetimereservation.duration)
             localtime(
                 onetimereservation.datetime, chile_timezone),
             onetimereservation.duration)
