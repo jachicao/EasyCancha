@@ -9,7 +9,7 @@ for number, name in Weekday.NAME_DICT.items():
     Weekday.objects.get_or_create(number=number, defaults=dict(name=name))
 
 for name in Platform.SEED_LIST:
-    platform = Platform.objects.get_or_create(name=name)
+    platform, _ = Platform.objects.get_or_create(name=name)
 
     if 'EASYCANCHA_USERNAME' in environ and 'EASYCANCHA_PASSWORD' in environ:
         PlatformUser.objects.get_or_create(
