@@ -1,5 +1,4 @@
 from app import wsgi  # noqa
-from os import environ
 from pytz import timezone
 from traceback import print_exc
 from django.utils.timezone import localtime
@@ -31,15 +30,13 @@ if HEADLESS:
 
 driver = Chrome(chrome_options=chrome_options)
 
-username = environ['EASYCANCHA_USERNAME']
-password = environ['EASYCANCHA_PASSWORD']
-
 for recurrentreservation in RecurrentReservation.objects.select_related(
         'clubsport', 'clubsport__club',
-        'clubsport__sport', 'weekday').iterator():
+        'clubsport__sport', 'weekday', 'platformuser').iterator():
     clubsport = recurrentreservation.clubsport
     sport = clubsport.sport
     club = clubsport.club
+    platformuser = recurrentreservation.platformuser
     weekday = recurrentreservation.weekday
     now = datetime_datetime.now(chile_timezone)
     next_date = \
@@ -50,7 +47,9 @@ for recurrentreservation in RecurrentReservation.objects.select_related(
         recurrentreservation.minute, 0, 0, chile_timezone)
     try:
         reserve_date(
-            driver, username, password,
+            driver,
+            platformuser.username,
+            decrypt(platformuser.password),
             sport.name, club.easycancha_id,
             next_datetime, recurrentreservation.duration)
     except Exception as e:
@@ -59,13 +58,16 @@ for recurrentreservation in RecurrentReservation.objects.select_related(
 
 for onetimereservation in OneTimeReservation.objects.select_related(
         'clubsport', 'clubsport__club',
-        'clubsport__sport').iterator():
+        'clubsport__sport', 'platformuser').iterator():
     clubsport = onetimereservation.clubsport
     sport = clubsport.sport
     club = clubsport.club
+    platformuser = onetimereservation.platformuser
     try:
         reserve_date(
-            driver, username, password,
+            driver,
+            platformuser.username,
+            decrypt(platformuser.password),
             sport.name, club.easycancha_id,
             localtime(
                 onetimereservation.datetime, chile_timezone),

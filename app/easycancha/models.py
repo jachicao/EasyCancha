@@ -97,6 +97,8 @@ class RecurrentReservation(models.Model):
     clubsport = models.ForeignKey(ClubSport, on_delete=models.CASCADE)
     weekday = models.ForeignKey(Weekday, on_delete=models.CASCADE)
 
+    platformuser = models.ForeignKey(PlatformUser, on_delete=models.CASCADE)
+
     hour = models.IntegerField()
     minute = models.IntegerField()
     duration = models.IntegerField()
@@ -111,6 +113,8 @@ class OneTimeReservation(models.Model):
     clubsport = models.ForeignKey(ClubSport, on_delete=models.CASCADE)
     datetime = models.DateTimeField()
     duration = models.IntegerField()
+
+    platformuser = models.ForeignKey(PlatformUser, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.clubsport} - {localtime(self.datetime)} '\
