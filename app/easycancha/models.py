@@ -1,5 +1,7 @@
 from django.db import models
+from django.db.models.signals import pre_save
 from django.utils.timezone import localtime
+from .cipher import AESCipher
 
 LENGTH_16 = 16
 LENGTH_32 = 32
@@ -8,6 +10,39 @@ LENGTH_128 = 128
 LENGTH_256 = 256
 
 # Create your models here.
+
+
+class Platform(models.Model):
+    NAME_EASYCANCHA = 'easycancha'
+    SEED_LIST = [
+        NAME_EASYCANCHA
+    ]
+    name = models.CharField(unique=True, max_length=LENGTH_32)
+
+    def __str__(self):
+        return f'{self.name}'
+
+
+class PlatformUser(models.Model):
+    username = models.CharField(unique=True, max_length=LENGTH_32)
+    password = models.CharField(max_length=LENGTH_256)
+
+    platform = models.ForeignKey(Platform, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.username} - {self.platform}'
+
+
+def encrypt(string):
+    aes = AESCipher()
+    return aes.encrypt(string).decode()
+
+
+def platformuser_pre_save(sender, instance, *args, **kwargs):
+    instance.password = encrypt(instance.password)
+
+
+pre_save.connect(platformuser_pre_save, sender=PlatformUser)
 
 
 class Weekday(models.Model):

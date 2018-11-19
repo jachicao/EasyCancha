@@ -4,3 +4,4 @@ pytz
 django
 psycopg2
 whitenoise
+pycrypto
