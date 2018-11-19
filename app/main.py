@@ -7,7 +7,7 @@ from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from easycancha.models import RecurrentReservation, OneTimeReservation
 from easycancha.tasks import reserve_date, get_next_weekday
-from .cipher import AESCipher
+from easycancha.cipher import AESCipher
 
 
 def decrypt(string):
